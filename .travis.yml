@@ -1,0 +1,27 @@
+language: node_js
+
+services: docker
+
+env:
+  - DOCKER_COMPOSE_VERSION=1.25.4
+
+before_install:
+  - docker -v && docker-compose -v
+  - sudo rm /usr/local/bin/docker-compose
+  - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
+  - chmod +x docker-compose
+  - sudo mv docker-compose /usr/local/bin
+
+install:
+  - docker-compose -f docker-compose-build.yaml build --parallel
+
+script:
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+  - docker tag reverseproxy luongbich08/reverseproxy:latest
+  - docker tag udagram-api-feed luongbich08/udagram-api-feed:latest
+  - docker tag udagram-api-user luongbich08/udagram-api-user:latest
+  - docker tag udagram-frontend:local luongbich08/udagram-frontend:local
+  - docker push luongbich08/reverseproxy:latest
+  - docker push luongbich08/udagram-api-feed:latest
+  - docker push luongbich08/udagram-api-user:latest
+  - docker push luongbich08/udagram-frontend:local
